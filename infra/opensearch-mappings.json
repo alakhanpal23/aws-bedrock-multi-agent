@@ -1,0 +1,18 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    }
+  },
+  "mappings": {
+    "properties": {
+      "title": { "type": "text" },
+      "body":  { "type": "text" },
+      "url":   { "type": "keyword" },
+      "source_type": { "type": "keyword" },
+      "timestamp": { "type": "date" },
+      "embedding_vector": { "type": "knn_vector", "dimension": 1024 }
+    }
+  }
+}

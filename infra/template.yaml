@@ -1,0 +1,323 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Bedrock Multi-Agent Orchestration Platform
+
+Globals:
+  Function:
+    Runtime: python3.11
+    Timeout: 30
+    MemorySize: 1024
+    Tracing: Active
+    Environment:
+      Variables:
+        REGION: !Ref AWS::Region
+        DOCS_BUCKET: !Ref DocsBucket
+        ARTIFACTS_BUCKET: !Ref ArtifactsBucket
+        DDB_REQUESTS: !Ref RequestsTable
+        DDB_TASKS: !Ref TasksTable
+        DDB_RUNS: !Ref RunsTable
+        DDB_PROFILES: !Ref ProfilesTable
+        OS_ENDPOINT: !GetAtt OpenSearchDomain.DomainEndpoint
+        EMBEDDINGS_MODEL_ID: "amazon.titan-embed-text-v2:0"
+        REASONING_MODEL_ID: "anthropic.claude-3-haiku-20240307-v1:0"
+
+Parameters:
+  OpenSearchInstanceType:
+    Type: String
+    Default: t3.small.search
+  OpenSearchEBSGB:
+    Type: Number
+    Default: 20
+
+Resources:
+
+  # ---------- Storage ----------
+  DocsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption: { ServerSideEncryptionConfiguration: [ { ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 } } ] }
+      PublicAccessBlockConfiguration: { BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, RestrictPublicBuckets: true }
+
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption: { ServerSideEncryptionConfiguration: [ { ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 } } ] }
+      PublicAccessBlockConfiguration: { BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, RestrictPublicBuckets: true }
+
+  RequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [ { AttributeName: pk, AttributeType: S }, { AttributeName: sk, AttributeType: S } ]
+      KeySchema: [ { AttributeName: pk, KeyType: HASH }, { AttributeName: sk, KeyType: RANGE } ]
+      SSESpecification: { SSEEnabled: true }
+
+  TasksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [ { AttributeName: pk, AttributeType: S }, { AttributeName: sk, AttributeType: S } ]
+      KeySchema: [ { AttributeName: pk, KeyType: HASH }, { AttributeName: sk, KeyType: RANGE } ]
+      SSESpecification: { SSEEnabled: true }
+
+  RunsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [ { AttributeName: pk, AttributeType: S }, { AttributeName: sk, AttributeType: S } ]
+      KeySchema: [ { AttributeName: pk, KeyType: HASH }, { AttributeName: sk, KeyType: RANGE } ]
+      SSESpecification: { SSEEnabled: true }
+
+  ProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [ { AttributeName: pk, AttributeType: S }, { AttributeName: sk, AttributeType: S } ]
+      KeySchema: [ { AttributeName: pk, KeyType: HASH }, { AttributeName: sk, KeyType: RANGE } ]
+      SSESpecification: { SSEEnabled: true }
+
+  # ---------- OpenSearch ----------
+  OpenSearchDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: agent-docs
+      EngineVersion: OpenSearch_2.13
+      ClusterConfig:
+        InstanceType: !Ref OpenSearchInstanceType
+        InstanceCount: 1
+        ZoneAwarenessEnabled: false
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: !Ref OpenSearchEBSGB
+        VolumeType: gp3
+      EncryptionAtRestOptions: { Enabled: true }
+      NodeToNodeEncryptionOptions: { Enabled: true }
+      AdvancedSecurityOptions:
+        Enabled: true
+        InternalUserDatabaseEnabled: true
+        MasterUserOptions:
+          MasterUserName: admin
+          MasterUserPassword: TempPassword123!
+      DomainEndpointOptions:
+        EnforceHTTPS: true
+        TLSSecurityPolicy: Policy-Min-TLS-1-2-2019-07
+      AccessPolicies:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { AWS: "*" }
+            Action: 'es:*'
+            Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/agent-docs/*'
+            Condition:
+              IpAddress: { aws:SourceIp: [ "0.0.0.0/0" ] }
+
+  # ---------- IAM Role for Lambdas ----------
+  AgentLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement: [ { Effect: Allow, Principal: { Service: [ lambda.amazonaws.com ] }, Action: sts:AssumeRole } ]
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AgentInline
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - { Effect: Allow, Action: [ 'bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream' ], Resource: '*' }
+              - { Effect: Allow, Action: [ 'dynamodb:PutItem','dynamodb:UpdateItem','dynamodb:GetItem','dynamodb:Query','dynamodb:BatchWriteItem' ],
+                  Resource: [ !GetAtt RequestsTable.Arn, !GetAtt TasksTable.Arn, !GetAtt RunsTable.Arn, !GetAtt ProfilesTable.Arn ] }
+              - { Effect: Allow, Action: [ 's3:PutObject','s3:GetObject','s3:ListBucket' ],
+                  Resource: [ !Sub '${DocsBucket.Arn}/*', !Sub '${ArtifactsBucket.Arn}/*', !GetAtt DocsBucket.Arn, !GetAtt ArtifactsBucket.Arn ] }
+              - { Effect: Allow, Action: [ 'es:ESHttpGet','es:ESHttpPost','es:ESHttpPut' ], Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/agent-docs/*' }
+
+  # ---------- Lambdas ----------
+  PlannerFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambdas/planner
+      Handler: handler.handler
+      Role: !GetAtt AgentLambdaRole.Arn
+      Environment: { Variables: { ROLE: "planner" } }
+
+  KnowledgeFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambdas/knowledge
+      Handler: handler.handler
+      Role: !GetAtt AgentLambdaRole.Arn
+      Timeout: 40
+      Environment: { Variables: { ROLE: "knowledge" } }
+
+  DataFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambdas/data
+      Handler: handler.handler
+      Role: !GetAtt AgentLambdaRole.Arn
+      Timeout: 40
+      Environment: { Variables: { ROLE: "data" } }
+
+  ActionFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambdas/action
+      Handler: handler.handler
+      Role: !GetAtt AgentLambdaRole.Arn
+      Environment: { Variables: { ROLE: "action" } }
+
+  SynthFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambdas/synth
+      Handler: handler.handler
+      Role: !GetAtt AgentLambdaRole.Arn
+      Timeout: 40
+      Environment: { Variables: { ROLE: "synth" } }
+
+  GuardrailFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambdas/guardrail
+      Handler: handler.handler
+      Role: !GetAtt AgentLambdaRole.Arn
+      Environment: { Variables: { ROLE: "guardrail" } }
+
+  # ---------- Step Functions ----------
+  Orchestrator:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: agent-orchestrator
+      Type: EXPRESS
+      Definition:
+        Comment: "Multi-Agent Orchestrator"
+        StartAt: Guardrail
+        States:
+          Guardrail:
+            Type: Task
+            Resource: !GetAtt GuardrailFn.Arn
+            Next: Plan
+          Plan:
+            Type: Task
+            Resource: !GetAtt PlannerFn.Arn
+            ResultPath: $.plan
+            Next: FanOut
+          FanOut:
+            Type: Map
+            ItemsPath: $.plan.tasks
+            MaxConcurrency: 10
+            Iterator:
+              StartAt: Route
+              States:
+                Route:
+                  Type: Choice
+                  Choices:
+                    - Variable: $.type
+                      StringEquals: "knowledge"
+                      Next: Knowledge
+                    - Variable: $.type
+                      StringEquals: "data"
+                      Next: Data
+                    - Variable: $.type
+                      StringEquals: "action"
+                      Next: Action
+                  Default: Fail
+                Knowledge:
+                  Type: Task
+                  Resource: !GetAtt KnowledgeFn.Arn
+                  End: true
+                Data:
+                  Type: Task
+                  Resource: !GetAtt DataFn.Arn
+                  End: true
+                Action:
+                  Type: Task
+                  Resource: !GetAtt ActionFn.Arn
+                  End: true
+                Fail:
+                  Type: Fail
+            Next: Synthesize
+          Synthesize:
+            Type: Task
+            Resource: !GetAtt SynthFn.Arn
+            End: true
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref PlannerFn
+        - LambdaInvokePolicy:
+            FunctionName: !Ref KnowledgeFn
+        - LambdaInvokePolicy:
+            FunctionName: !Ref DataFn
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ActionFn
+        - LambdaInvokePolicy:
+            FunctionName: !Ref SynthFn
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GuardrailFn
+
+  # ---------- API Gateway ----------
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      TracingEnabled: true
+      EndpointConfiguration: REGIONAL
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          MetricsEnabled: true
+          LoggingLevel: INFO
+      Auth:
+        ApiKeyRequired: true
+
+  InvokeHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambdas/action
+      Handler: handler.invoke_entrypoint
+      Role: !GetAtt AgentLambdaRole.Arn
+      Environment:
+        Variables:
+          STATE_MACHINE_ARN: !Ref Orchestrator
+      Events:
+        InvokeRoute:
+          Type: Api
+          Properties:
+            Path: /invoke
+            Method: POST
+            RestApiId: !Ref Api
+
+  StatusHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambdas/action
+      Handler: handler.status_entrypoint
+      Role: !GetAtt AgentLambdaRole.Arn
+      Events:
+        StatusRoute:
+          Type: Api
+          Properties:
+            Path: /status/{request_id}
+            Method: GET
+            RestApiId: !Ref Api
+
+  ApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    DependsOn: ApiprodStage
+    Properties:
+      Enabled: true
+      Name: agent-api-key
+      StageKeys:
+        - RestApiId: !Ref Api
+          StageName: prod
+
+Outputs:
+  ApiUrl:
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/prod'
+  OpenSearchEndpoint:
+    Value: !GetAtt OpenSearchDomain.DomainEndpoint
+  DocsBucketName:
+    Value: !Ref DocsBucket
+  ArtifactsBucketName:
+    Value: !Ref ArtifactsBucket
