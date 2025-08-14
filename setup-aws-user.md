@@ -30,16 +30,16 @@
 ### 3. Create Access Keys
 1. Go to IAM → Users → bedrock-developer → Security credentials
 2. Create access key → Command Line Interface (CLI)
-3. Copy Access Key ID and Secret Access Key
+3. Copy Access Key ID and Secret Access Key (keep these secure!)
 
 ### 4. Configure AWS CLI
 ```bash
 aws configure
 ```
 Enter:
-- AWS Access Key ID: [your key]
-- AWS Secret Access Key: [your secret]
-- Default region: us-east-1
+- AWS Access Key ID: [paste your access key]
+- AWS Secret Access Key: [paste your secret key]
+- Default region: [your preferred region, e.g., us-west-2]
 - Default output format: json
 
 ## Install Dependencies
