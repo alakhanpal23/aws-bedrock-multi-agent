@@ -132,6 +132,7 @@ Resources:
                   Resource: [ !Sub '${DocsBucket.Arn}/*', !Sub '${ArtifactsBucket.Arn}/*', !GetAtt DocsBucket.Arn, !GetAtt ArtifactsBucket.Arn ] }
               - { Effect: Allow, Action: [ 'es:ESHttpGet','es:ESHttpPost','es:ESHttpPut' ], Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/agent-docs/*' }
               - { Effect: Allow, Action: [ 'textract:DetectDocumentText', 'textract:StartDocumentTextDetection', 'textract:GetDocumentTextDetection' ], Resource: '*' }
+              - { Effect: Allow, Action: [ 'states:StartSyncExecution', 'states:StartExecution' ], Resource: !Sub 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:agent-orchestrator' }
 
   # ---------- Lambdas ----------
   PlannerFn:
@@ -194,21 +195,6 @@ Resources:
       Timeout: 300
       MemorySize: 1536
       Environment: { Variables: { ROLE: "ingest" } }
-      Events:
-        S3Upload:
-          Type: S3
-          Properties:
-            Bucket: !Ref DocsBucket
-            Events: s3:ObjectCreated:*
-            Filter:
-              S3Key:
-                Rules:
-                  - Name: suffix
-                    Value: .pdf
-                  - Name: suffix
-                    Value: .txt
-                  - Name: suffix
-                    Value: .md
 
   # ---------- Step Functions ----------
   Orchestrator:
