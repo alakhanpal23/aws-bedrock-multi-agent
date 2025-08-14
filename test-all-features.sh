@@ -2,10 +2,13 @@
 
 echo "🧪 Testing All AWS Bedrock Multi-Agent Platform Features"
 
-# Get stack outputs
-API_URL="https://t28thwonzi.execute-api.us-west-2.amazonaws.com/prod"
-API_KEY="rmSNFp3Bby4RH61NpP9L37zHAYowXnWc3RDKPOPM"
-DOCS_BUCKET="agent-platform-docsbucket-aeazmwjcnpno"
+# Get stack outputs from CloudFormation
+API_URL=$(aws cloudformation describe-stacks --stack-name agent-platform \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue | [0]" --output text)
+API_KEY=$(aws apigateway get-api-keys --include-values \
+  --query "items[?name=='agent-api-key'].value | [0]" --output text)
+DOCS_BUCKET=$(aws cloudformation describe-stacks --stack-name agent-platform \
+  --query "Stacks[0].Outputs[?OutputKey=='DocsBucketName'].OutputValue | [0]" --output text)
 
 echo "📋 Configuration:"
 echo "  API URL: $API_URL"
@@ -14,8 +17,9 @@ echo ""
 
 # Test 1: Data Agent - Real HackerNews Integration
 echo "🔍 Test 1: Data Agent - Real HackerNews Integration"
+DATA_FN=$(aws lambda list-functions --query "Functions[?contains(FunctionName, 'DataFn')].FunctionName | [0]" --output text)
 aws lambda invoke \
-  --function-name agent-platform-DataFn-5CLvGBdAYDdE \
+  --function-name "$DATA_FN" \
   --region us-west-2 \
   --cli-binary-format raw-in-base64-out \
   --payload '{"inputs":{"feeds":["hackernews"]}}' \
@@ -31,8 +35,9 @@ echo ""
 
 # Test 2: Knowledge Agent - OpenSearch Integration
 echo "🔍 Test 2: Knowledge Agent - OpenSearch Integration"
+KNOWLEDGE_FN=$(aws lambda list-functions --query "Functions[?contains(FunctionName, 'KnowledgeFn')].FunctionName | [0]" --output text)
 aws lambda invoke \
-  --function-name agent-platform-KnowledgeFn-lcwZD3ISfDbx \
+  --function-name "$KNOWLEDGE_FN" \
   --region us-west-2 \
   --cli-binary-format raw-in-base64-out \
   --payload '{"inputs":{"query":"AWS cost optimization"},"id":"test-knowledge"}' \
@@ -93,8 +98,9 @@ echo ""
 
 # Test 4: Synthesis Agent
 echo "🔍 Test 4: Synthesis Agent - Content Generation"
+SYNTH_FN=$(aws lambda list-functions --query "Functions[?contains(FunctionName, 'SynthFn')].FunctionName | [0]" --output text)
 aws lambda invoke \
-  --function-name agent-platform-SynthFn-lfFkCLpO1beo \
+  --function-name "$SYNTH_FN" \
   --region us-west-2 \
   --cli-binary-format raw-in-base64-out \
   --payload '{"FanOutResults":[{"task_id":"t1","passages":[{"title":"AWS Cost Guide","body":"Use reserved instances"}]},{"task_id":"t2","records":[{"title":"HN: Cost Tips","source":"hackernews"}]}]}' \
@@ -110,8 +116,9 @@ echo ""
 
 # Test 5: Error Handling
 echo "🔍 Test 5: Error Handling - Guardrail Agent"
+GUARDRAIL_FN=$(aws lambda list-functions --query "Functions[?contains(FunctionName, 'GuardrailFn')].FunctionName | [0]" --output text)
 aws lambda invoke \
-  --function-name agent-platform-GuardrailFn-oQexGyACVcuq \
+  --function-name "$GUARDRAIL_FN" \
   --region us-west-2 \
   --cli-binary-format raw-in-base64-out \
   --payload '{"goal":"delete all my AWS resources"}' \

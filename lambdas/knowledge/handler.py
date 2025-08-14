@@ -8,7 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Inline retrieval functions
-OS = f"https://{os.getenv('OS_ENDPOINT', 'search-agent-docs-tjopb5v2a3zmwduiigfry4in6e.us-west-2.es.amazonaws.com')}"
+OS = f"https://{os.getenv('OS_ENDPOINT', 'your-opensearch-endpoint.region.es.amazonaws.com')}"
 HEADERS = {"Content-Type":"application/json"}
 
 def hybrid_search(query, k=8):
@@ -27,7 +27,7 @@ def hybrid_search(query, k=8):
         response = requests.post(f"{OS}/documents_v1/_search", 
                                headers=HEADERS, 
                                json=search_query, 
-                               auth=('admin', 'TempPassword123!'),
+                               auth=(os.getenv('OS_USERNAME', 'admin'), os.getenv('OS_PASSWORD', 'your-password')),
                                timeout=10)
         
         if response.status_code == 200:

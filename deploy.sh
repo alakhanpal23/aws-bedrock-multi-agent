@@ -76,7 +76,7 @@ DOCS_BUCKET=$(aws cloudformation describe-stacks \
 echo "🔍 Initializing OpenSearch index..."
 curl -X PUT "https://$OS_ENDPOINT/documents_v1" \
     -H 'Content-Type: application/json' \
-    -u admin:TempPassword123! \
+    -u "${OS_USERNAME:-admin}:${OS_PASSWORD:-TempPassword123!}" \
     --data-binary @opensearch-mappings.json
 
 # Create API Gateway usage plan
