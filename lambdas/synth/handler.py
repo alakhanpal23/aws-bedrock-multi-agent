@@ -1,13 +1,34 @@
-import sys
-import os
 import json
 import logging
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from common.bedrock_client import call_llm
-from common.error_handler import handle_lambda_errors, retry_with_backoff, bedrock_circuit_breaker
+import boto3
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+# Inline Bedrock client
+bedrock = boto3.client('bedrock-runtime', region_name='us-west-2')
+
+def call_llm(system, context_obj, user_msg, max_tokens=1000):
+    try:
+        prompt = f"System: {system}\n\nContext: {json.dumps(context_obj)}\n\nUser: {user_msg}\n\nAssistant:"
+        
+        response = bedrock.invoke_model(
+            modelId='anthropic.claude-3-haiku-20240307-v1:0',
+            body=json.dumps({
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": max_tokens,
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ]
+            })
+        )
+        
+        result = json.loads(response['body'].read())
+        return result['content'][0]['text']
+        
+    except Exception as e:
+        logger.error(f"Bedrock error: {str(e)}")
+        return f"Error generating response: {str(e)}"
 
 SYSTEM_PROMPT = """You are a synthesis agent that combines information from multiple sources into a coherent, well-cited response.
 
@@ -19,55 +40,54 @@ Given outputs from knowledge retrieval, data fetching, and action agents, create
 
 Format your response in markdown with clear sections and bullet points where appropriate."""
 
-@handle_lambda_errors
 def handler(event, context):
-    logger.info("Starting synthesis of agent outputs")
-    
-    # Extract results from previous agents
-    fanout_results = event.get("FanOutResults", [])
-    
-    if not fanout_results:
-        logger.warning("No fanout results to synthesize")
-        return {
-            "answer_md": "No information was retrieved to synthesize.",
-            "citations": [],
-            "status": "no_data"
+    try:
+        logger.info("Starting synthesis of agent outputs")
+        
+        # Extract results from previous agents
+        fanout_results = event.get("FanOutResults", [])
+        
+        if not fanout_results:
+            logger.warning("No fanout results to synthesize")
+            return {
+                "answer_md": "No information was retrieved to synthesize.",
+                "citations": [],
+                "status": "no_data"
+            }
+        
+        # Prepare context for synthesis
+        context = {
+            "agent_outputs": fanout_results,
+            "output_count": len(fanout_results)
         }
-    
-    # Prepare context for synthesis
-    context = {
-        "agent_outputs": fanout_results,
-        "output_count": len(fanout_results)
-    }
-    
-    # Use circuit breaker for Bedrock calls
-    answer_md = bedrock_circuit_breaker.call(
-        synthesize_with_retry,
-        context,
-        "Create a comprehensive answer based on the agent outputs"
-    )
-    
-    # Extract citations from agent outputs
-    citations = extract_citations(fanout_results)
-    
-    logger.info(f"Synthesis complete with {len(citations)} citations")
-    
-    return {
-        "answer_md": answer_md,
-        "citations": citations,
-        "status": "success",
-        "sources_used": len(citations)
-    }
-
-@retry_with_backoff(max_retries=2, base_delay=2.0)
-def synthesize_with_retry(context, user_message):
-    """Synthesize with retry logic"""
-    return call_llm(
-        system=SYSTEM_PROMPT,
-        context_obj=context,
-        user_msg=user_message,
-        max_tokens=1000
-    )
+        
+        # Generate synthesis
+        answer_md = call_llm(
+            system=SYSTEM_PROMPT,
+            context_obj=context,
+            user_msg="Create a comprehensive answer based on the agent outputs",
+            max_tokens=1000
+        )
+        
+        # Extract citations from agent outputs
+        citations = extract_citations(fanout_results)
+        
+        logger.info(f"Synthesis complete with {len(citations)} citations")
+        
+        return {
+            "answer_md": answer_md,
+            "citations": citations,
+            "status": "success",
+            "sources_used": len(citations)
+        }
+        
+    except Exception as e:
+        logger.error(f"Synthesis error: {str(e)}")
+        return {
+            "answer_md": f"Error generating synthesis: {str(e)}",
+            "citations": [],
+            "status": "error"
+        }
 
 def extract_citations(fanout_results):
     """Extract citations from all agent outputs"""
