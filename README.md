@@ -2,6 +2,8 @@
 
 A serverless multi-agent system built on AWS that orchestrates intelligent workflows using Amazon Bedrock's Claude 3 Haiku and Titan embeddings, with OpenSearch for knowledge retrieval.
 
+> Monitored by [Wraith](https://usewraith.ai) — deploy diffs are reviewed automatically and incidents get auto-triaged.
+
 ## 🏗️ Architecture
 
 ```
