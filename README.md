@@ -6,39 +6,9 @@ A serverless multi-agent system built on AWS that orchestrates intelligent workf
 
 ## 🏗️ Architecture
 
-```
-┌─────────────┐    ┌──────────────┐    ┌─────────────────┐
-│ API Gateway │───▶│ Step Functions│───▶│ Lambda Agents   │
-└─────────────┘    └──────────────┘    └─────────────────┘
-                           │                      │
-                           ▼                      ▼
-                   ┌──────────────┐    ┌─────────────────┐
-                   │   Guardrail  │    │   Planner       │
-                   │   Agent      │    │   Agent         │
-                   └──────────────┘    └─────────────────┘
-                                              │
-                                              ▼
-                                    ┌─────────────────┐
-                                    │ Knowledge Agent │◀──┐
-                                    │ Data Agent      │   │
-                                    │ Action Agent    │   │
-                                    └─────────────────┘   │
-                                              │           │
-                                              ▼           │
-                                    ┌─────────────────┐   │
-                                    │ Synthesis Agent │   │
-                                    └─────────────────┘   │
-                                                          │
-┌─────────────┐    ┌──────────────┐    ┌─────────────────┐   │
-│ OpenSearch  │◀───│ Embeddings   │◀───│ Knowledge Base  │───┘
-│ Vector DB   │    │ (Titan v2)   │    │ Documents       │
-└─────────────┘    └──────────────┘    └─────────────────┘
+![AWS Bedrock multi-agent architecture: API Gateway starts a Step Functions workflow, which validates, plans, executes specialist agents, and synthesizes a response](docs/system-design.svg)
 
-┌─────────────┐    ┌──────────────┐
-│ DynamoDB    │    │ S3 Buckets   │
-│ Tables      │    │ Artifacts    │
-└─────────────┘    └──────────────┘
-```
+*Step Functions coordinates Lambda agents. Bedrock supplies models, OpenSearch supports retrieval, DynamoDB stores workflow state, and S3 stores artifacts.*
 
 ## 🚀 Features
 
