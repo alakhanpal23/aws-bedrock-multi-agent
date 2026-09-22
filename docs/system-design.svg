@@ -1,56 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="590" viewBox="0 0 1200 590" role="img" aria-labelledby="title desc">
-<title id="title">A serverless agent workflow</title>
-<desc id="desc">Orchestration, specialist execution, retrieval, and synthesis</desc>
-<rect width="1200" height="590" rx="28" fill="#071521"/>
-<rect x="1" y="1" width="1198" height="588" rx="27" fill="none" stroke="#254256" stroke-width="2"/>
-<rect x="52" y="46" width="8" height="42" rx="4" fill="#ffbd75"/>
-<text x="77" y="67" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="2">AWS BEDROCK MULTI-AGENT  /  SYSTEM DESIGN</text>
-<text x="52" y="120" fill="#f1f7fb" font-family="Arial, Helvetica, sans-serif" font-size="37" font-weight="700">A serverless agent workflow</text>
-<text x="52" y="154" fill="#a9bfcb" font-family="Arial, Helvetica, sans-serif" font-size="19">Orchestration, specialist execution, retrieval, and synthesis</text>
-<rect x="52" y="211" width="208" height="224" rx="18" fill="#102637" stroke="#2d4b5d" stroke-width="2"/>
-<circle cx="82" cy="244" r="15" fill="#ffbd75" opacity=".18"/>
-<text x="82" y="250" text-anchor="middle" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">01</text>
-<text x="72" y="295" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4">ENTRY</text>
-<rect x="72" y="315" width="168" height="1" fill="#315469"/>
-<text x="72" y="357" fill="#f1f7fb" font-family="Arial, Helvetica, sans-serif" font-size="19">API Gateway</text>
-<text x="72" y="388" fill="#a9bfcb" font-family="Arial, Helvetica, sans-serif" font-size="17">Invoke / status</text>
-<path d="M 269 323 H 280" stroke="#ffbd75" stroke-width="3" stroke-linecap="round"/>
-<path d="M 275 317 L 282 323 L 275 329" fill="none" stroke="#ffbd75" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="284" y="211" width="208" height="224" rx="18" fill="#102637" stroke="#2d4b5d" stroke-width="2"/>
-<circle cx="314" cy="244" r="15" fill="#ffbd75" opacity=".18"/>
-<text x="314" y="250" text-anchor="middle" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">02</text>
-<text x="304" y="295" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4">ORCHESTRATE</text>
-<rect x="304" y="315" width="168" height="1" fill="#315469"/>
-<text x="304" y="357" fill="#f1f7fb" font-family="Arial, Helvetica, sans-serif" font-size="19">Step Functions</text>
-<text x="304" y="388" fill="#a9bfcb" font-family="Arial, Helvetica, sans-serif" font-size="17">Workflow state</text>
-<path d="M 501 323 H 512" stroke="#ffbd75" stroke-width="3" stroke-linecap="round"/>
-<path d="M 507 317 L 514 323 L 507 329" fill="none" stroke="#ffbd75" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="516" y="211" width="208" height="224" rx="18" fill="#102637" stroke="#2d4b5d" stroke-width="2"/>
-<circle cx="546" cy="244" r="15" fill="#ffbd75" opacity=".18"/>
-<text x="546" y="250" text-anchor="middle" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">03</text>
-<text x="536" y="295" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4">PLAN</text>
-<rect x="536" y="315" width="168" height="1" fill="#315469"/>
-<text x="536" y="357" fill="#f1f7fb" font-family="Arial, Helvetica, sans-serif" font-size="19">Guardrail</text>
-<text x="536" y="388" fill="#a9bfcb" font-family="Arial, Helvetica, sans-serif" font-size="17">Planner</text>
-<path d="M 733 323 H 744" stroke="#ffbd75" stroke-width="3" stroke-linecap="round"/>
-<path d="M 739 317 L 746 323 L 739 329" fill="none" stroke="#ffbd75" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="748" y="211" width="208" height="224" rx="18" fill="#102637" stroke="#2d4b5d" stroke-width="2"/>
-<circle cx="778" cy="244" r="15" fill="#ffbd75" opacity=".18"/>
-<text x="778" y="250" text-anchor="middle" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">04</text>
-<text x="768" y="295" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4">EXECUTE</text>
-<rect x="768" y="315" width="168" height="1" fill="#315469"/>
-<text x="768" y="357" fill="#f1f7fb" font-family="Arial, Helvetica, sans-serif" font-size="19">Knowledge + data</text>
-<text x="768" y="388" fill="#a9bfcb" font-family="Arial, Helvetica, sans-serif" font-size="17">Action agents</text>
-<path d="M 965 323 H 976" stroke="#ffbd75" stroke-width="3" stroke-linecap="round"/>
-<path d="M 971 317 L 978 323 L 971 329" fill="none" stroke="#ffbd75" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="980" y="211" width="208" height="224" rx="18" fill="#102637" stroke="#2d4b5d" stroke-width="2"/>
-<circle cx="1010" cy="244" r="15" fill="#ffbd75" opacity=".18"/>
-<text x="1010" y="250" text-anchor="middle" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">05</text>
-<text x="1000" y="295" fill="#ffbd75" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4">SYNTHESIZE</text>
-<rect x="1000" y="315" width="168" height="1" fill="#315469"/>
-<text x="1000" y="357" fill="#f1f7fb" font-family="Arial, Helvetica, sans-serif" font-size="19">Bedrock-backed</text>
-<text x="1000" y="388" fill="#a9bfcb" font-family="Arial, Helvetica, sans-serif" font-size="17">Cited response</text>
-<rect x="52" y="474" width="1096" height="65" rx="13" fill="#112d3c" stroke="#2d4b5d"/>
-<circle cx="78" cy="507" r="6" fill="#ffbd75"/>
-<text x="98" y="514" fill="#d8e9ef" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600">SERVICES   •   Bedrock models  /  OpenSearch retrieval  /  DynamoDB state  /  S3 artifacts</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+<title id="title">AWS Bedrock Multi-Agent — system diagram</title>
+<desc id="desc">API Gateway invokes a Step Functions state machine with guardrail, planning, mapped specialist tasks, and synthesis.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 9 4.5 L 0 9" fill="none" stroke="#465768" stroke-width="1.5"/></marker></defs>
+<rect width="1200" height="640" fill="#ffffff"/>
+<text x="40" y="52" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#172b3a">AWS Bedrock Multi-Agent — system diagram</text>
+<path d="M 40 69 H 1160" stroke="#d5dce2" stroke-width="1"/>
+<rect x="40" y="250" width="175" height="90" fill="#ffffff" stroke="#465768" stroke-width="1.7"/>
+<text x="127.5" y="292.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#172b3a">API Gateway</text>
+<text x="127.5" y="317.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">invoke / status</text>
+<rect x="255" y="115" width="705" height="425" fill="#f8fafb" stroke="#9aaab5" stroke-width="1.5" stroke-dasharray="7 5"/>
+<rect x="269" y="105" width="324" height="22" fill="#ffffff"/>
+<text x="277" y="121" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#33485a">Step Functions Express state machine</text>
+<rect x="285" y="230" width="145" height="80" fill="#ffffff" stroke="#465768" stroke-width="1.7"/>
+<text x="357.5" y="267.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#172b3a">Guardrail</text>
+<text x="357.5" y="292.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">Lambda</text>
+<rect x="470" y="230" width="145" height="80" fill="#ffffff" stroke="#465768" stroke-width="1.7"/>
+<text x="542.5" y="267.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#172b3a">Planner</text>
+<text x="542.5" y="292.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">Lambda</text>
+<rect x="655" y="170" width="270" height="255" fill="#f8fafb" stroke="#9aaab5" stroke-width="1.5" stroke-dasharray="7 5"/>
+<rect x="669" y="160" width="171" height="22" fill="#ffffff"/>
+<text x="677" y="176" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#33485a">Map: up to 10 tasks</text>
+<rect x="675" y="205" width="230" height="60" fill="#ffffff" stroke="#465768" stroke-width="1.7"/>
+<text x="790.0" y="232.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#172b3a">Knowledge</text>
+<text x="790.0" y="257.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">OpenSearch retrieval</text>
+<rect x="675" y="280" width="230" height="60" fill="#ffffff" stroke="#465768" stroke-width="1.7"/>
+<text x="790.0" y="307.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#172b3a">Data</text>
+<text x="790.0" y="332.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">external data</text>
+<rect x="675" y="355" width="230" height="60" fill="#ffffff" stroke="#465768" stroke-width="1.7"/>
+<text x="790.0" y="382.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#172b3a">Action</text>
+<text x="790.0" y="407.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">artifacts</text>
+<rect x="995" y="250" width="165" height="90" fill="#ffffff" stroke="#465768" stroke-width="1.7"/>
+<text x="1077.5" y="292.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#172b3a">Synthesis</text>
+<text x="1077.5" y="317.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">Lambda response</text>
+<path d="M 215 295 L 285 270" fill="none" stroke="#465768" stroke-width="1.8"/>
+<polygon points="285,270 276.3225209574476,278.4084099249539 272.959156987466,268.9909908090055" fill="#465768"/>
+<path d="M 430 270 L 470 270" fill="none" stroke="#465768" stroke-width="1.8"/>
+<polygon points="470,270 459.0,275.0 459.0,265.0" fill="#465768"/>
+<path d="M 615 270 L 655 270" fill="none" stroke="#465768" stroke-width="1.8"/>
+<polygon points="655,270 644.0,275.0 644.0,265.0" fill="#465768"/>
+<path d="M 925 295 L 995 295" fill="none" stroke="#465768" stroke-width="1.8"/>
+<polygon points="995,295 984.0,300.0 984.0,290.0" fill="#465768"/>
+<text x="285" y="474" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">Bedrock: model calls</text>
+<text x="525" y="474" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">OpenSearch: retrieval</text>
+<text x="740" y="474" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">DynamoDB: state</text>
+<text x="285" y="510" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">S3: documents and artifacts</text>
+<text x="40" y="575" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#536777">The diagram follows the workflow in infra/template.yaml; each mapped task routes to a specialist Lambda.</text>
 </svg>
